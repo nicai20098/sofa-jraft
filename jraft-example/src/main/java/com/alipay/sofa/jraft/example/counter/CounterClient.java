@@ -16,6 +16,7 @@
  */
 package com.alipay.sofa.jraft.example.counter;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
@@ -39,16 +40,22 @@ public class CounterClient {
         }
         final String groupId = args[0];
         final String confStr = args[1];
-
+        System.out.println("args-1" + groupId);
+        System.out.println("args-2" + confStr);
         final Configuration conf = new Configuration();
         if (!conf.parse(confStr)) {
             throw new IllegalArgumentException("Fail to parse conf:" + confStr);
         }
 
-        RouteTable.getInstance().updateConfiguration(groupId, conf);
+
+        RouteTable instance = RouteTable.getInstance();
+        instance.updateConfiguration(groupId, conf);
 
         final CliClientServiceImpl cliClientService = new CliClientServiceImpl();
-        cliClientService.init(new CliOptions());
+        CliOptions cliOptions = new CliOptions();
+        cliOptions.setRpcConnectTimeoutMs(100000);
+        cliClientService.init(cliOptions);
+
 
         if (!RouteTable.getInstance().refreshLeader(cliClientService, groupId, 1000).isOk()) {
             throw new IllegalStateException("Refresh leader failed");
